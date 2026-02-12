@@ -44,7 +44,7 @@ async function init() {
   }
 
   fs.mkdirSync(uploadDir, { recursive: true });
-  fs.mkdirSync(path.resolve(__dirname, '../../../sample-data'), { recursive: true });
+  fs.mkdirSync(path.resolve(__dirname, '../../sample-data'), { recursive: true });
 
   console.log('Database initialized and demo user ready (demo@saas.com / password123).');
 }
