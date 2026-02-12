@@ -1,70 +1,168 @@
-# Getting Started with Create React App
+# Survey Analytics & Report Automation SaaS
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Production-ready starter for a side-income SaaS product aimed at market research agencies and HR teams.
 
-## Available Scripts
+## What it does
+1. Upload survey Excel file (`.xlsx`).
+2. Auto-generate dashboards (bar, stacked, pie, trend, wave comparison).
+3. Compute KPI metrics (mean, top-box, bottom-box, NPS, distribution, response count).
+4. Run significance testing via Python microservice.
+5. Auto-generate downloadable PPT report.
+6. Produce AI-style insight summary (placeholder deterministic model).
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Architecture (clean modular split)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```text
+/frontend        -> React + Chart.js UI
+/backend         -> Express API + auth + upload + analytics orchestration
+/python-service  -> FastAPI stats + significance + ppt generation
+/database        -> SQLite schema/seed SQL
+/uploads         -> Stored uploads and generated reports
+/sample-data     -> Example survey files
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Phase 1 — Project setup
 
-### `npm test`
+### 1) Install dependencies
+```bash
+npm run setup
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 2) Initialize DB + demo user
+```bash
+npm --prefix backend run migrate
+```
+Demo login:
+- Email: `demo@saas.com`
+- Password: `password123`
 
-### `npm run build`
+### 3) Generate sample survey file
+```bash
+npm --prefix backend run sample:data
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Phase 2 — Upload system
+- `POST /api/surveys/upload` accepts `.xlsx` with `multer`.
+- Stores file in `/uploads`.
+- Parses rows + question columns from first sheet.
+- Saves survey metadata + raw row JSON in SQLite.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Phase 3 — Dashboard generation
+- `GET /api/surveys/:id/dashboard`
+- Backend calculates KPIs per question.
+- Frontend renders:
+  - bar chart
+  - pie chart
+  - trend chart
+  - wave comparison chart
+  - stacked sentiment summary
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Phase 4 — Significance testing
+- Backend sends grouped response payload to Python:
+  - `POST /significance`
+- Python runs Welch t-test for group comparisons.
+- Returns significant labels (`A>B`, etc.) + p-values.
 
-### `npm run eject`
+## Phase 5 — PPT generation
+- Backend calls `POST /generate-ppt`.
+- Python builds report with `python-pptx`:
+  - title slide
+  - KPI summary
+  - insight summary
+  - chart highlight slide
+- Backend streams `.pptx` back for download.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Phase 6 — Polish
+- JWT auth with protected routes.
+- Upload history view.
+- Insight summary banner.
+- Deployment-ready service split.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Run locally (3 terminals)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Terminal A — Python microservice
+```bash
+npm run dev:python
+```
 
-## Learn More
+### Terminal B — Backend API
+```bash
+npm run dev:backend
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Terminal C — Frontend
+```bash
+npm run dev:frontend
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Then open `http://localhost:5173`.
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## API summary
 
-### Analyzing the Bundle Size
+### Auth
+- `POST /api/auth/login`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Surveys
+- `GET /api/surveys`
+- `POST /api/surveys/upload`
+- `GET /api/surveys/:id/dashboard`
+- `GET /api/surveys/:id/report`
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## File-by-file guide
 
-### Advanced Configuration
+### `/frontend`
+- `index.html` — Vite entry HTML.
+- `src/main.jsx` — React bootstrap + router.
+- `src/App.jsx` — route map + auth guard.
+- `src/api.js` — Axios client with JWT interceptor.
+- `src/pages/LoginPage.jsx` — login form.
+- `src/pages/UploadPage.jsx` — upload + survey history.
+- `src/pages/DashboardPage.jsx` — KPIs, charts, significance, PPT download.
+- `src/components/ChartCard.jsx` — multi-chart visual per question.
+- `src/components/KpiTable.jsx` — KPI metrics table.
+- `src/styles.css` — clean UI styling.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### `/backend`
+- `src/server.js` — API bootstrap.
+- `src/app.js` — middleware + routes + error handler.
+- `src/config/env.js` — environment config.
+- `src/config/db.js` — sqlite connection singleton.
+- `src/middleware/auth.js` — JWT validation.
+- `src/routes/authRoutes.js` — login route.
+- `src/routes/surveyRoutes.js` — protected survey routes + upload handling.
+- `src/controllers/authController.js` — login and token issue.
+- `src/controllers/surveyController.js` — upload, dashboard, report endpoints.
+- `src/services/surveyService.js` — parsing + KPI + chart payload generation.
+- `src/services/pythonClient.js` — calls Python microservice.
+- `src/utils/initDb.js` — schema creation + demo user seed.
+- `src/utils/generateSampleSurvey.js` — creates sample `.xlsx`.
 
-### Deployment
+### `/python-service`
+- `app.py` — FastAPI service with significance, insight, PPT endpoints.
+- `requirements.txt` — Python dependencies.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### `/database`
+- `schema.sql` — database schema reference.
+- `seed.sql` — seed notes.
 
-### `npm run build` fails to minify
+### `/uploads`
+- runtime storage for uploaded survey files + generated PPT.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### `/sample-data`
+- generated sample `.xlsx` for testing flows.
+
+---
+
+## Deployment-ready notes
+- Replace SQLite with Postgres for multi-tenant scale.
+- Move uploads to object storage (S3/GCS).
+- Add payment + subscription gates (Stripe).
+- Add role-based access control and audit logs.
