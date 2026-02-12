@@ -1,0 +1,28 @@
+const path = require('path');
+const ExcelJS = require('exceljs');
+
+async function main() {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('SurveyData');
+  sheet.addRow(['RespondentID', 'Segment', 'Q1_Satisfaction', 'Q2_Recommend', 'Q3_ServiceSpeed', 'Q4_Value']);
+  [
+    [1, 'A', 5, 9, 4, 5],
+    [2, 'A', 4, 8, 4, 4],
+    [3, 'A', 5, 10, 5, 5],
+    [4, 'B', 3, 7, 3, 3],
+    [5, 'B', 2, 6, 2, 3],
+    [6, 'B', 3, 5, 3, 2],
+    [7, 'C', 4, 8, 4, 4],
+    [8, 'C', 5, 9, 5, 4],
+    [9, 'C', 4, 8, 4, 5],
+    [10, 'A', 5, 10, 5, 5],
+    [11, 'B', 2, 4, 2, 2],
+    [12, 'C', 4, 9, 4, 4]
+  ].forEach((row) => sheet.addRow(row));
+
+  const outPath = path.resolve(__dirname, '../../../sample-data/sample-survey.xlsx');
+  await workbook.xlsx.writeFile(outPath);
+  console.log(`Sample survey created at ${outPath}`);
+}
+
+main();

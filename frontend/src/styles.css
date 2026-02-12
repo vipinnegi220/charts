@@ -1,0 +1,16 @@
+body { font-family: Inter, Arial, sans-serif; margin: 0; background: #f1f5f9; color: #0f172a; }
+.page { padding: 24px 48px; }
+.auth-layout { min-height: 100vh; display: grid; place-items: center; }
+.card { background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08); }
+.auth-card { width: 360px; display: flex; flex-direction: column; gap: 12px; }
+input, button { padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; }
+button { background: #2563eb; color: #fff; border: none; cursor: pointer; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border-bottom: 1px solid #e2e8f0; padding: 8px; text-align: left; }
+.survey-item { display: flex; justify-content: space-between; padding: 8px 0; }
+.error { color: #dc2626; }
+.insight { background: #ecfeff; padding: 12px; border-left: 4px solid #06b6d4; }
+.stacked-note { font-size: 0.9rem; color: #475569; }
+pre { white-space: pre-wrap; }
